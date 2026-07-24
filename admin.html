@@ -78,6 +78,12 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--blue);cursor:poin
   padding:10px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s}
 .rail .bottom button:hover{background:rgba(255,255,255,.16);color:#fff}
 
+.topbar{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:10px;
+  padding:13px 34px;background:rgba(241,244,249,.9);backdrop-filter:saturate(180%) blur(12px);
+  border-bottom:1px solid var(--line)}
+.topbar .crumb{margin-right:auto;font-size:13px;font-weight:700;color:var(--ink-2);letter-spacing:-.01em}
+.topbar .btn[disabled]{opacity:.5;cursor:progress}
+
 .view{padding:34px 34px 130px;max-width:1180px}
 .head{margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap}
 .head h2{font-size:24px;font-weight:800;letter-spacing:-.04em;margin:0 0 6px;line-height:1.2}
@@ -155,6 +161,7 @@ tr.group td:first-child{box-shadow:inset 3px 0 0 var(--blue)}
   .rail nav button .tag{display:none}
   .rail .bottom{margin:0 0 0 auto;flex-direction:row}
   .rail .bottom .u{display:none}
+  .topbar{padding:11px 16px}
   .view{padding:22px 16px 120px}
   .savebar{left:0;padding:12px 16px}
   .chips{margin-left:0;width:100%}
@@ -191,11 +198,16 @@ tr.group td:first-child{box-shadow:inset 3px 0 0 var(--blue)}
     </nav>
     <div class="bottom">
       <div class="u">과정영상 공유 관리<br>K-BRAIN HRD사업본부</div>
-      <button id="logoutBtn">로그아웃</button>
     </div>
   </aside>
 
   <main>
+    <header class="topbar">
+      <span class="crumb" id="crumb">공유 설정</span>
+      <button class="btn sm ghost" id="refreshBtn" title="스프레드시트에서 다시 읽어옵니다">새로고침</button>
+      <button class="btn sm ghost" id="logoutBtn">나가기</button>
+    </header>
+
     <!-- 공유 설정 -->
     <section class="view" id="tab-perms">
       <div class="head">
@@ -251,6 +263,23 @@ const API = 'https://script.google.com/macros/s/AKfycbxJU_SQCuGVjBshf485lOcBKRaH
 const $ = function (s) { return document.querySelector(s); };
 let PW = '';
 let D = { clients: [], videos: [], perms: {} };
+let DIRTY = false;   /* 저장하지 않은 변경사항 여부 */
+
+function markDirty() { DIRTY = true; }
+function markClean() { DIRTY = false; }
+
+/* 저장하지 않은 내용이 있으면 확인을 받는다 */
+function confirmLeave(what) {
+  if (!DIRTY) return true;
+  return confirm('저장하지 않은 변경사항이 있습니다.\n' + what + ' 하시면 변경 내용이 사라집니다.\n\n계속할까요?');
+}
+
+/* 탭을 닫거나 브라우저 새로고침을 누를 때 브라우저 기본 경고를 띄운다 */
+window.addEventListener('beforeunload', function (e) {
+  if (!DIRTY) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
 
 /* ---------- 통신 ---------- */
 async function call(action, extra) {
@@ -263,27 +292,56 @@ async function call(action, extra) {
 }
 
 /* ---------- 로그인 ---------- */
-$('#loginBtn').addEventListener('click', login);
+$('#loginBtn').addEventListener('click', function () { login(); });
 $('#pw').addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
-$('#logoutBtn').addEventListener('click', function () { location.reload(); });
 
-async function login() {
+$('#logoutBtn').addEventListener('click', function () {
+  if (!confirmLeave('나가기를')) return;
+  markClean();
+  location.reload();
+});
+
+$('#refreshBtn').addEventListener('click', async function () {
+  if (!confirmLeave('새로 읽어오면')) return;
+  const btn = this;
+  btn.disabled = true; btn.textContent = '읽는 중';
+  setState('스프레드시트에서 다시 읽는 중');
+  try {
+    const ok = await login(true);
+    if (ok) setState('최신 내용을 불러왔습니다 · ' + new Date().toLocaleTimeString('ko-KR'), 'ok');
+  } finally {
+    btn.disabled = false; btn.textContent = '새로고침';
+  }
+});
+
+async function login(silent) {
   const btn = $('#loginBtn');
-  PW = $('#pw').value;
-  if (!PW) { $('#loginMsg').textContent = '비밀번호를 입력하세요.'; return; }
+  if (!silent) {
+    PW = $('#pw').value;
+    if (!PW) { $('#loginMsg').textContent = '비밀번호를 입력하세요.'; return false; }
+    btn.disabled = true; btn.textContent = '확인 중';
+  }
 
-  btn.disabled = true; btn.textContent = '확인 중';
   try {
     const r = await call('admin.load');
-    if (!r.ok) { $('#loginMsg').textContent = r.message; return; }
+    if (!r.ok) {
+      if (silent) setState('불러오지 못했습니다 · ' + r.message, 'err');
+      else $('#loginMsg').textContent = r.message;
+      return false;
+    }
     D = { clients: r.clients, videos: r.videos, perms: r.perms };
+    markClean();
     $('#gate').classList.add('hidden');
     $('#app').classList.remove('hidden');
     renderAll();
+    if (!silent) setState('');
+    return true;
   } catch (err) {
-    $('#loginMsg').textContent = '연결하지 못했습니다. 배포 URL을 확인하세요.';
+    if (silent) setState('연결하지 못했습니다', 'err');
+    else $('#loginMsg').textContent = '연결하지 못했습니다. 배포 URL을 확인하세요.';
+    return false;
   } finally {
-    btn.disabled = false; btn.textContent = '로그인';
+    if (!silent) { btn.disabled = false; btn.textContent = '로그인'; }
   }
 }
 
@@ -296,6 +354,7 @@ document.querySelectorAll('.rail nav button').forEach(function (b) {
     ['perms', 'clients', 'videos'].forEach(function (t) {
       $('#tab-' + t).classList.toggle('hidden', t !== b.dataset.tab);
     });
+    $('#crumb').textContent = b.textContent.replace(/\d+$/, '').trim();
     window.scrollTo(0, 0);
   });
 });
@@ -332,7 +391,7 @@ function renderClients() {
       if (!confirm('"' + (c.name || c.id) + '" 고객사를 삭제할까요?\n공유 설정도 함께 지워집니다.')) return;
       delete D.perms[c.id];
       D.clients.splice(+b.dataset.del, 1);
-      renderAll(); setState('삭제됨 · 저장을 눌러야 반영됩니다', 'edit');
+      markDirty(); renderAll(); setState('삭제됨 · 저장을 눌러야 반영됩니다', 'edit');
     });
   });
 }
@@ -363,7 +422,7 @@ function renderVideos() {
       if (!confirm('"' + (v.title || v.id) + '" 영상을 목록에서 삭제할까요?')) return;
       Object.keys(D.perms).forEach(function (cid) { delete D.perms[cid][v.id]; });
       D.videos.splice(+b.dataset.del, 1);
-      renderAll(); setState('삭제됨 · 저장을 눌러야 반영됩니다', 'edit');
+      markDirty(); renderAll(); setState('삭제됨 · 저장을 눌러야 반영됩니다', 'edit');
     });
   });
 }
@@ -372,6 +431,7 @@ function bindEdits(sel, arr) {
   $(sel).querySelectorAll('input[data-f]').forEach(function (el) {
     el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', function () {
       arr[+el.dataset.i][el.dataset.f] = el.type === 'checkbox' ? el.checked : el.value;
+      markDirty();
       setState('수정됨 · 저장을 눌러야 반영됩니다', 'edit');
     });
   });
@@ -456,7 +516,7 @@ function renderPerms() {
   table.querySelectorAll('input[data-v]').forEach(function (el) {
     el.addEventListener('change', function () {
       setFlag(P, el.dataset.v, el.dataset.k, el.checked);
-      renderPerms();
+      markDirty(); renderPerms();
       setState('수정됨 · 저장을 눌러야 반영됩니다', 'edit');
     });
   });
@@ -468,7 +528,7 @@ function renderPerms() {
         if (String(v.course) !== el.dataset.course) return;
         setFlag(P, v.id, k, on);
       });
-      renderPerms();
+      markDirty(); renderPerms();
       setState('"' + el.dataset.course + '" 과정 ' + (on ? '전체 선택' : '전체 해제') +
                ' · 저장을 눌러야 반영됩니다', 'edit');
     });
@@ -478,7 +538,7 @@ function renderPerms() {
     el.addEventListener('change', function () {
       const on = el.checked, k = el.dataset.all;
       D.videos.forEach(function (v) { setFlag(P, v.id, k, on); });
-      renderPerms();
+      markDirty(); renderPerms();
       setState('전체 ' + (on ? '선택' : '해제') + ' · 저장을 눌러야 반영됩니다', 'edit');
     });
   });
@@ -514,7 +574,7 @@ $('#addClient').addEventListener('click', function () {
   while (used['C' + ('00' + n).slice(-3)]) n++;
 
   D.clients.push({ id: 'C' + ('00' + n).slice(-3), name: '', code: '', expiresAt: '', active: true });
-  renderAll();
+  markDirty(); renderAll();
   setState('고객사 추가됨 · 고객사명과 접속코드를 입력하세요', 'edit');
 });
 
@@ -525,15 +585,15 @@ $('#addVideo').addEventListener('click', function () {
     if (m) max = Math.max(max, +m[1]);
   });
   D.videos.push({ id: 'V' + ('000' + (max + 1)).slice(-3), course: '', title: '', url: '', duration: '', active: true });
-  renderAll();
+  markDirty(); renderAll();
   setState('영상 추가됨 · 과정명과 URL을 입력하세요', 'edit');
 });
 
 /* ---------- 저장 ---------- */
 $('#saveBtn').addEventListener('click', save);
 $('#reloadBtn').addEventListener('click', function () {
-  if (!confirm('저장하지 않은 변경사항이 사라집니다. 계속할까요?')) return;
-  login();
+  if (!confirmLeave('되돌리면')) return;
+  login(true);
 });
 
 async function save() {
@@ -551,6 +611,7 @@ async function save() {
     r = await call('admin.savePerms', { perms: D.perms });
     if (!r.ok) throw new Error(r.message);
 
+    markClean();
     setState('저장되었습니다 · ' + new Date().toLocaleTimeString('ko-KR'), 'ok');
   } catch (err) {
     setState('저장 실패 · ' + err.message, 'err');
