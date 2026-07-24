@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>관리자 | 이러닝 과정영상</title>
+<style>
+:root{
+  --purple:#7132F5; --purple-deep:#4B1BB0; --purple-soft:#F3EEFF;
+  --ink:#16121F; --ink-2:#5C5470; --line:#E7E2F2; --bg:#FBFAFE; --white:#fff;
+  --ok:#12855F; --warn:#D6335A;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
+  -webkit-font-smoothing:antialiased;font-size:14px}
+button,input,select{font-family:inherit}
+.hidden{display:none !important}
+
+/* 로그인 */
+#gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+.gate-card{width:100%;max-width:380px;background:var(--white);border:1px solid var(--line);
+  border-radius:18px;padding:36px 30px}
+.gate-card h1{font-size:20px;font-weight:800;margin:0 0 6px}
+.gate-card p{margin:0 0 24px;font-size:13px;color:var(--ink-2)}
+label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:7px}
+input[type=password],input[type=text],input[type=date]{width:100%;padding:11px 13px;
+  border:1.5px solid var(--line);border-radius:9px;font-size:14px;outline:none;background:var(--white)}
+input:focus{border-color:var(--purple)}
+.btn{padding:11px 18px;border:0;border-radius:9px;background:var(--purple);color:#fff;
+  font-size:14px;font-weight:700;cursor:pointer}
+.btn:hover{background:var(--purple-deep)}
+.btn[disabled]{opacity:.5;cursor:progress}
+.btn.full{width:100%;margin-top:16px}
+.btn.sm{padding:7px 13px;font-size:12.5px}
+.ghost{background:var(--white);border:1px solid var(--line);color:var(--ink-2)}
+.ghost:hover{background:var(--purple-soft);border-color:var(--purple);color:var(--purple-deep)}
+.danger{background:none;border:0;color:var(--warn);font-size:12px;font-weight:700;cursor:pointer;padding:6px}
+.msg{margin-top:12px;font-size:13px;color:var(--warn);min-height:18px}
+
+/* 레이아웃 */
+header.top{background:var(--white);border-bottom:1px solid var(--line);padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;position:sticky;top:0;z-index:10}
+.title{font-size:16px;font-weight:800;padding:16px 0}
+nav{display:flex;gap:4px}
+nav button{background:none;border:0;padding:18px 16px;font-size:14px;font-weight:700;
+  color:var(--ink-2);cursor:pointer;border-bottom:2.5px solid transparent}
+nav button.on{color:var(--purple);border-bottom-color:var(--purple)}
+main{max-width:1240px;margin:0 auto;padding:26px 24px 90px}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.panel-head h2{font-size:17px;font-weight:800;margin:0 0 4px}
+.panel-head p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.tools{display:flex;gap:8px;align-items:center}
+
+/* 표 */
+table{width:100%;border-collapse:collapse;background:var(--white);
+  border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th{background:var(--purple-soft);color:var(--purple-deep);font-size:12px;font-weight:800;
+  text-align:left;padding:11px 12px;white-space:nowrap}
+td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:middle}
+td input[type=text],td input[type=date]{padding:7px 9px;font-size:13px;border-radius:7px}
+tr.off{background:#FAFAFC;color:#9A93AC}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+
+/* 공유 설정 */
+.perm-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--white);
+  border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+select{padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;font-size:14px;
+  background:var(--white);min-width:200px}
+.count{font-size:12.5px;color:var(--ink-2);margin-left:auto}
+.count b{color:var(--purple-deep)}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--purple);cursor:pointer}
+th.ctr,td.ctr{text-align:center;width:84px}
+.course-row td{background:#F7F4FF;font-size:12px;font-weight:800;color:var(--purple-deep);
+  letter-spacing:.04em}
+
+/* 저장 바 */
+.savebar{position:fixed;left:0;right:0;bottom:0;background:var(--white);
+  border-top:1px solid var(--line);padding:12px 24px;display:flex;justify-content:flex-end;
+  gap:10px;align-items:center;box-shadow:0 -8px 24px -20px rgba(0,0,0,.4)}
+.savebar .state{margin-right:auto;font-size:13px;color:var(--ink-2)}
+.savebar .state.ok{color:var(--ok);font-weight:700}
+.savebar .state.err{color:var(--warn);font-weight:700}
+.loading{padding:60px;text-align:center;color:var(--ink-2)}
+</style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<section id="gate">
+  <div class="gate-card">
+    <h1>관리자 로그인</h1>
+    <p>이러닝 과정영상 공유 관리</p>
+    <label for="pw">비밀번호</label>
+    <input type="password" id="pw" autocomplete="current-password">
+    <button class="btn full" id="loginBtn">로그인</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</section>
+
+<!-- 콘솔 -->
+<div id="app" class="hidden">
+  <header class="top">
+    <div class="title">이러닝 과정영상 관리</div>
+    <nav>
+      <button data-tab="perms" class="on">공유 설정</button>
+      <button data-tab="clients">고객사</button>
+      <button data-tab="videos">영상 목록</button>
+    </nav>
+    <button class="btn sm ghost" id="logoutBtn">로그아웃</button>
+  </header>
+
+  <main>
+    <!-- 공유 설정 -->
+    <section id="tab-perms">
+      <div class="panel-head">
+        <div>
+          <h2>공유 설정</h2>
+          <p>고객사를 선택한 뒤, 공유할 영상에 체크하세요. 재생을 끄면 목록에서 사라집니다.</p>
+        </div>
+      </div>
+      <div class="perm-bar">
+        <select id="permClient"></select>
+        <button class="btn sm ghost" id="allPlay">재생 전체 선택</button>
+        <button class="btn sm ghost" id="nonePlay">재생 전체 해제</button>
+        <button class="btn sm ghost" id="allDl">다운로드 전체 선택</button>
+        <button class="btn sm ghost" id="noneDl">다운로드 전체 해제</button>
+        <span class="count" id="permCount"></span>
+      </div>
+      <table id="permTable"></table>
+    </section>
+
+    <!-- 고객사 -->
+    <section id="tab-clients" class="hidden">
+      <div class="panel-head">
+        <div>
+          <h2>고객사</h2>
+          <p>접속코드는 고객사에 전달할 값입니다. 중복될 수 없습니다.</p>
+        </div>
+        <div class="tools"><button class="btn sm" id="addClient">+ 고객사 추가</button></div>
+      </div>
+      <table id="clientTable"></table>
+    </section>
+
+    <!-- 영상 -->
+    <section id="tab-videos" class="hidden">
+      <div class="panel-head">
+        <div>
+          <h2>영상 목록</h2>
+          <p>Vimeo 주소창의 URL을 그대로 붙여넣으세요. 비공개 영상은 해시가 포함된 전체 URL이 필요합니다.</p>
+        </div>
+        <div class="tools"><button class="btn sm" id="addVideo">+ 영상 추가</button></div>
+      </div>
+      <table id="videoTable"></table>
+    </section>
+  </main>
+
+  <div class="savebar">
+    <span class="state" id="state"></span>
+    <button class="btn ghost" id="reloadBtn">되돌리기</button>
+    <button class="btn" id="saveBtn">저장</button>
+  </div>
+</div>
+
+<script>
+/* Apps Script 웹앱 배포 URL */
+const API = 'https://script.google.com/macros/s/XXXXXXXXXXXX/exec';
+
+const $ = function (s) { return document.querySelector(s); };
+let PW = '';
+let D = { clients: [], videos: [], perms: {} };
+let tab = 'perms';
+
+/* ---------- 통신 ---------- */
+async function call(action, extra) {
+  const body = Object.assign({ action: action, pw: PW }, extra || {});
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+/* ---------- 로그인 ---------- */
+$('#loginBtn').addEventListener('click', login);
+$('#pw').addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
+$('#logoutBtn').addEventListener('click', function () { location.reload(); });
+
+async function login() {
+  const btn = $('#loginBtn');
+  PW = $('#pw').value;
+  if (!PW) { $('#loginMsg').textContent = '비밀번호를 입력하세요.'; return; }
+
+  btn.disabled = true; btn.textContent = '확인 중...';
+  try {
+    const r = await call('admin.load');
+    if (!r.ok) { $('#loginMsg').textContent = r.message; return; }
+    D = { clients: r.clients, videos: r.videos, perms: r.perms };
+    $('#gate').classList.add('hidden');
+    $('#app').classList.remove('hidden');
+    renderAll();
+  } catch (err) {
+    $('#loginMsg').textContent = '연결에 실패했습니다. 배포 URL을 확인하세요.';
+  } finally {
+    btn.disabled = false; btn.textContent = '로그인';
+  }
+}
+
+/* ---------- 탭 ---------- */
+document.querySelectorAll('nav button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    tab = b.dataset.tab;
+    document.querySelectorAll('nav button').forEach(function (x) { x.classList.toggle('on', x === b); });
+    ['perms', 'clients', 'videos'].forEach(function (t) {
+      $('#tab-' + t).classList.toggle('hidden', t !== tab);
+    });
+    setState('');
+  });
+});
+
+/* ---------- 렌더 ---------- */
+function renderAll() { renderClients(); renderVideos(); renderPermClients(); renderPerms(); }
+
+function renderClients() {
+  const rows = D.clients.map(function (c, i) {
+    return '<tr' + (c.active ? '' : ' class="off"') + '>' +
+      '<td><input type="text" class="mono" value="' + esc(c.id) + '" data-i="' + i + '" data-f="id" style="width:80px"></td>' +
+      '<td><input type="text" value="' + esc(c.name) + '" data-i="' + i + '" data-f="name"></td>' +
+      '<td><input type="text" class="mono" value="' + esc(c.code) + '" data-i="' + i + '" data-f="code" style="width:130px"></td>' +
+      '<td><input type="date" value="' + esc(c.expiresAt) + '" data-i="' + i + '" data-f="expiresAt" style="width:150px"></td>' +
+      '<td class="ctr"><input type="checkbox" ' + (c.active ? 'checked' : '') + ' data-i="' + i + '" data-f="active"></td>' +
+      '<td class="ctr"><button class="danger" data-del="' + i + '">삭제</button></td>' +
+    '</tr>';
+  }).join('');
+
+  $('#clientTable').innerHTML =
+    '<tr><th>고객사ID</th><th>고객사명</th><th>접속코드</th><th>만료일</th><th class="ctr">사용</th><th class="ctr"></th></tr>' +
+    (rows || '<tr><td colspan="6" style="color:#9A93AC;padding:24px;text-align:center">고객사를 추가하세요.</td></tr>');
+
+  bindEdits('#clientTable', D.clients);
+  $('#clientTable').querySelectorAll('[data-del]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      const c = D.clients[+b.dataset.del];
+      if (!confirm('"' + c.name + '" 고객사를 삭제할까요?\n공유 설정도 함께 지워집니다.')) return;
+      delete D.perms[c.id];
+      D.clients.splice(+b.dataset.del, 1);
+      renderAll(); setState('삭제됨 — 저장을 눌러야 반영됩니다');
+    });
+  });
+}
+
+function renderVideos() {
+  const rows = D.videos.map(function (v, i) {
+    return '<tr' + (v.active ? '' : ' class="off"') + '>' +
+      '<td class="mono">' + esc(v.id) + '</td>' +
+      '<td><input type="text" value="' + esc(v.course) + '" data-i="' + i + '" data-f="course" style="width:150px"></td>' +
+      '<td><input type="text" value="' + esc(v.title) + '" data-i="' + i + '" data-f="title"></td>' +
+      '<td><input type="text" class="mono" value="' + esc(v.url) + '" data-i="' + i + '" data-f="url" placeholder="https://vimeo.com/123456789/abcdef"></td>' +
+      '<td><input type="text" value="' + esc(v.duration) + '" data-i="' + i + '" data-f="duration" style="width:70px"></td>' +
+      '<td class="ctr"><input type="checkbox" ' + (v.active ? 'checked' : '') + ' data-i="' + i + '" data-f="active"></td>' +
+      '<td class="ctr"><button class="danger" data-del="' + i + '">삭제</button></td>' +
+    '</tr>';
+  }).join('');
+
+  $('#videoTable').innerHTML =
+    '<tr><th>영상ID</th><th>과정명</th><th>영상제목</th><th>영상URL</th><th>시간</th><th class="ctr">사용</th><th class="ctr"></th></tr>' +
+    (rows || '<tr><td colspan="7" style="color:#9A93AC;padding:24px;text-align:center">영상을 추가하세요.</td></tr>');
+
+  bindEdits('#videoTable', D.videos);
+  $('#videoTable').querySelectorAll('[data-del]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      const v = D.videos[+b.dataset.del];
+      if (!confirm('"' + v.title + '" 영상을 목록에서 삭제할까요?')) return;
+      Object.keys(D.perms).forEach(function (cid) { delete D.perms[cid][v.id]; });
+      D.videos.splice(+b.dataset.del, 1);
+      renderAll(); setState('삭제됨 — 저장을 눌러야 반영됩니다');
+    });
+  });
+}
+
+function bindEdits(sel, arr) {
+  $(sel).querySelectorAll('input[data-f]').forEach(function (el) {
+    const ev = el.type === 'checkbox' ? 'change' : 'input';
+    el.addEventListener(ev, function () {
+      arr[+el.dataset.i][el.dataset.f] = el.type === 'checkbox' ? el.checked : el.value;
+      setState('수정됨 — 저장을 눌러야 반영됩니다');
+    });
+  });
+}
+
+function renderPermClients() {
+  const sel = $('#permClient');
+  const prev = sel.value;
+  sel.innerHTML = D.clients.map(function (c) {
+    return '<option value="' + esc(c.id) + '">' + esc(c.name) + ' (' + esc(c.code) + ')</option>';
+  }).join('');
+  if (prev) sel.value = prev;
+}
+
+function renderPerms() {
+  const cid = $('#permClient').value;
+  const table = $('#permTable');
+
+  if (!cid) {
+    table.innerHTML = '<tr><td class="loading">고객사를 먼저 추가하세요.</td></tr>';
+    $('#permCount').textContent = '';
+    return;
+  }
+  if (!D.perms[cid]) D.perms[cid] = {};
+  const P = D.perms[cid];
+
+  let html = '<tr><th style="width:80px">영상ID</th><th>영상제목</th>' +
+             '<th class="ctr">재생</th><th class="ctr">다운로드</th></tr>';
+  let course = null, play = 0, dl = 0;
+
+  D.videos.forEach(function (v) {
+    if (v.course !== course) {
+      course = v.course;
+      html += '<tr class="course-row"><td colspan="4">' + esc(course) + '</td></tr>';
+    }
+    const p = P[v.id] || {};
+    if (p.play) play++;
+    if (p.download) dl++;
+    html += '<tr' + (v.active ? '' : ' class="off"') + '>' +
+      '<td class="mono">' + esc(v.id) + '</td>' +
+      '<td>' + esc(v.title) + (v.active ? '' : ' <span style="font-size:11px">(사용중지)</span>') + '</td>' +
+      '<td class="ctr"><input type="checkbox" data-v="' + esc(v.id) + '" data-k="play" ' + (p.play ? 'checked' : '') + '></td>' +
+      '<td class="ctr"><input type="checkbox" data-v="' + esc(v.id) + '" data-k="download" ' + (p.download ? 'checked' : '') + '></td>' +
+    '</tr>';
+  });
+
+  table.innerHTML = html;
+  $('#permCount').innerHTML = '재생 <b>' + play + '</b> / 다운로드 <b>' + dl + '</b> / 전체 ' + D.videos.length + '편';
+
+  table.querySelectorAll('input[data-v]').forEach(function (el) {
+    el.addEventListener('change', function () {
+      const vid = el.dataset.v, k = el.dataset.k;
+      if (!P[vid]) P[vid] = { play: false, download: false };
+      P[vid][k] = el.checked;
+      if (k === 'download' && el.checked) P[vid].play = true;   // 다운로드는 재생을 포함한다
+      if (k === 'play' && !el.checked) P[vid].download = false;
+      renderPerms();
+      setState('수정됨 — 저장을 눌러야 반영됩니다');
+    });
+  });
+}
+
+$('#permClient').addEventListener('change', function () { renderPerms(); setState(''); });
+
+[['allPlay', 'play', true], ['nonePlay', 'play', false],
+ ['allDl', 'download', true], ['noneDl', 'download', false]].forEach(function (x) {
+  $('#' + x[0]).addEventListener('click', function () {
+    const cid = $('#permClient').value;
+    if (!cid) return;
+    if (!D.perms[cid]) D.perms[cid] = {};
+    D.videos.forEach(function (v) {
+      const P = D.perms[cid];
+      if (!P[v.id]) P[v.id] = { play: false, download: false };
+      P[v.id][x[1]] = x[2];
+      if (x[1] === 'download' && x[2]) P[v.id].play = true;
+      if (x[1] === 'play' && !x[2]) P[v.id].download = false;
+    });
+    renderPerms(); setState('수정됨 — 저장을 눌러야 반영됩니다');
+  });
+});
+
+/* ---------- 추가 ---------- */
+$('#addClient').addEventListener('click', function () {
+  let n = 1;
+  const used = {};
+  D.clients.forEach(function (c) { used[c.id] = true; });
+  while (used['C' + ('00' + n).slice(-3)]) n++;
+
+  D.clients.push({ id: 'C' + ('00' + n).slice(-3), name: '', code: '', expiresAt: '', active: true });
+  renderClients(); renderPermClients();
+  setState('추가됨 — 고객사명과 접속코드를 입력하세요');
+});
+
+$('#addVideo').addEventListener('click', function () {
+  let max = 0;
+  D.videos.forEach(function (v) {
+    const m = /^V(\d+)$/.exec(v.id);
+    if (m) max = Math.max(max, +m[1]);
+  });
+  D.videos.push({ id: 'V' + ('000' + (max + 1)).slice(-3), course: '', title: '', url: '', duration: '', active: true });
+  renderVideos();
+  setState('추가됨 — 제목과 URL을 입력하세요');
+});
+
+/* ---------- 저장 ---------- */
+$('#saveBtn').addEventListener('click', save);
+$('#reloadBtn').addEventListener('click', function () {
+  if (!confirm('저장하지 않은 변경사항이 사라집니다. 계속할까요?')) return;
+  login();
+});
+
+async function save() {
+  const btn = $('#saveBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+  setState('저장 중...');
+
+  try {
+    let r = await call('admin.saveClients', { clients: D.clients });
+    if (!r.ok) throw new Error(r.message);
+
+    r = await call('admin.saveVideos', { videos: D.videos });
+    if (!r.ok) throw new Error(r.message);
+
+    r = await call('admin.savePerms', { perms: D.perms });
+    if (!r.ok) throw new Error(r.message);
+
+    setState('저장되었습니다 (' + new Date().toLocaleTimeString('ko-KR') + ')', 'ok');
+  } catch (err) {
+    setState('저장 실패: ' + err.message, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '저장';
+  }
+}
+
+function setState(msg, kind) {
+  const el = $('#state');
+  el.textContent = msg;
+  el.className = 'state' + (kind ? ' ' + kind : '');
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+  });
+}
+</script>
+</body>
+</html>
