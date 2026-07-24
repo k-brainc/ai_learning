@@ -275,20 +275,39 @@ $('#outBtn').addEventListener('click', function () {
 });
 
 /* 새로고침 대비: 접속코드와 스크롤 위치를 세션에 보관 */
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+let scrollTimer = null;
 function saveScroll() {
   if (!DATA) return;
   try { sessionStorage.setItem('kb_scroll', String(window.scrollY)); } catch (e) {}
 }
+window.addEventListener('scroll', function () {
+  clearTimeout(scrollTimer);
+  scrollTimer = setTimeout(saveScroll, 150);
+}, { passive: true });
 window.addEventListener('beforeunload', saveScroll);
 window.addEventListener('pagehide', saveScroll);
 
 /* 페이지가 열릴 때 이전 세션이 있으면 그대로 복원 */
-window.addEventListener('DOMContentLoaded', function () {
+function boot() {
   let saved = '';
   try { saved = sessionStorage.getItem('kb_code') || ''; } catch (e) {}
   if (!saved) return;
   $('#code').value = saved;
   enter(true);
+}
+
+/* 스크립트 실행 시점에 이미 문서가 준비됐을 수도 있으므로 두 경우를 모두 처리 */
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
+
+/* 뒤로가기·앞으로가기로 캐시에서 복원될 때도 확인 */
+window.addEventListener('pageshow', function (e) {
+  if (e.persisted && !DATA) boot();
 });
 
 /* ---------- 접속 ---------- */
@@ -390,7 +409,14 @@ function render(restoring) {
   if (restoring) {
     let y = 0;
     try { y = parseInt(sessionStorage.getItem('kb_scroll') || '0', 10); } catch (e) {}
-    if (y > 0) requestAnimationFrame(function () { window.scrollTo(0, y); });
+    if (y > 0) {
+      /* 커버 이미지가 자리를 잡은 뒤 이동해야 위치가 맞는다 */
+      const go = function () { window.scrollTo(0, y); };
+      requestAnimationFrame(go);
+      setTimeout(go, 120);
+      setTimeout(go, 400);
+      window.addEventListener('load', go, { once: true });
+    }
   }
 }
 
