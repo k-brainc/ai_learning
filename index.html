@@ -264,12 +264,11 @@ const DL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
   'stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/>' +
   '<path d="M4 21h16"/></svg>';
 
-$('#enterBtn').addEventListener('click', function () { enter(false); });
-$('#code').addEventListener('keydown', function (e) { if (e.key === 'Enter') enter(false); });
+$('#enterBtn').addEventListener('click', enter);
+$('#code').addEventListener('keydown', function (e) { if (e.key === 'Enter') enter(); });
 $('#closeBtn').addEventListener('click', closePlayer);
 $('#modal').addEventListener('click', function (e) { if (e.target === this) closePlayer(); });
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePlayer(); });
-
 $('#outBtn').addEventListener('click', function () {
   try { sessionStorage.removeItem('kb_code'); sessionStorage.removeItem('kb_scroll'); } catch (e) {}
   location.reload();
