@@ -3,102 +3,166 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>관리자 | 과정영상 공유 관리</title>
+<title>관리자 콘솔 | K-BRAIN 과정영상</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 :root{
   --navy:#0B2A5B; --navy-deep:#061B3D; --blue:#1A6FE8; --cyan:#35C8F5;
-  --ink:#0C1424; --ink-2:#5D6A80; --canvas:#EEF2F8; --paper:#fff;
-  --line:rgba(11,42,91,.13); --soft:#EDF3FD;
-  --ok:#0E7A55; --warn:#C42D55;
+  --ink:#0C1424; --ink-2:#5B6980; --ink-3:#8E9AAD;
+  --canvas:#F1F4F9; --paper:#fff; --rail:#0A2450;
+  --line:#E2E8F2; --soft:#EDF3FD;
+  --ok:#0E7A55; --warn:#C42D55; --amber:#E08A1E;
+  --r:14px;
 }
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--canvas);color:var(--ink);
   font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,sans-serif;
-  font-size:14px;line-height:1.55;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
-button,input,select{font-family:inherit}
+  font-size:14px;line-height:1.55;letter-spacing:-.014em;-webkit-font-smoothing:antialiased}
+button,input,select{font-family:inherit;color:inherit}
 .hidden{display:none !important}
 img{display:block;max-width:100%}
-:focus-visible{outline:2.5px solid var(--blue);outline-offset:2px;border-radius:4px}
+.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-variant-numeric:tabular-nums}
+:focus-visible{outline:2.5px solid var(--blue);outline-offset:2px;border-radius:6px}
 
-/* 로그인 */
-#gate{min-height:100dvh;display:grid;place-items:center;padding:24px}
-.gate-card{width:100%;max-width:370px;background:var(--paper);border:1px solid var(--line);
-  border-radius:16px;padding:34px 30px}
-.gate-card img{height:18px;width:auto;margin-bottom:22px;opacity:.9}
-.gate-card h1{font-size:20px;font-weight:800;letter-spacing:-.03em;margin:0 0 6px}
-.gate-card p{margin:0 0 24px;font-size:13px;color:var(--ink-2)}
-label{display:block;font-size:11.5px;font-weight:800;letter-spacing:.08em;color:var(--ink-2);margin-bottom:7px}
-input[type=password],input[type=text],input[type=date]{width:100%;padding:11px 13px;
-  border:1.5px solid var(--line);border-radius:9px;font-size:14px;outline:none;background:var(--paper);color:var(--ink)}
-input:focus{border-color:var(--blue)}
-.btn{padding:11px 18px;border:0;border-radius:9px;background:var(--navy);color:#fff;
-  font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+/* ---------- 공통 요소 ---------- */
+.btn{padding:10px 17px;border:0;border-radius:10px;background:var(--navy);color:#fff;
+  font-size:13.5px;font-weight:700;cursor:pointer;transition:background .15s,transform .1s}
 .btn:hover{background:var(--blue)}
+.btn:active{transform:scale(.98)}
 .btn[disabled]{opacity:.5;cursor:progress}
-.btn.full{width:100%;margin-top:16px}
-.btn.sm{padding:8px 14px;font-size:12.5px}
-.ghost{background:var(--paper);border:1px solid var(--line);color:var(--ink-2)}
-.ghost:hover{background:var(--soft);border-color:var(--blue);color:var(--navy)}
-.danger{background:none;border:0;color:var(--warn);font-size:12px;font-weight:700;cursor:pointer;padding:6px}
-.msg{margin-top:12px;font-size:13px;color:var(--warn);min-height:18px}
+.btn.sm{padding:8px 14px;font-size:12.5px;border-radius:9px}
+.btn.ghost{background:var(--paper);border:1px solid var(--line);color:var(--ink-2)}
+.btn.ghost:hover{background:var(--soft);border-color:#BFD4F5;color:var(--navy)}
+.link-danger{background:none;border:0;color:var(--ink-3);font-size:12px;font-weight:700;
+  cursor:pointer;padding:6px 8px;border-radius:7px;transition:.15s}
+.link-danger:hover{background:#FDF0F3;color:var(--warn)}
+label{display:block;font-size:11.5px;font-weight:800;letter-spacing:.09em;
+  color:var(--ink-2);margin-bottom:8px}
+input[type=password],input[type=text],input[type=date]{width:100%;padding:11px 13px;
+  border:1.5px solid var(--line);border-radius:10px;font-size:14px;outline:none;
+  background:var(--paper);transition:border-color .15s,box-shadow .15s}
+input[type=password]:focus,input[type=text]:focus,input[type=date]:focus{
+  border-color:var(--blue);box-shadow:0 0 0 3.5px rgba(26,111,232,.12)}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--blue);cursor:pointer;margin:0}
 
-/* 레이아웃 */
-header.top{background:var(--paper);border-bottom:1px solid var(--line);padding:0 24px;
-  display:flex;align-items:center;gap:20px;position:sticky;top:0;z-index:10}
-header.top img.logo{height:17px;width:auto;opacity:.9}
-nav{display:flex;gap:2px}
-nav button{background:none;border:0;padding:17px 15px;font-size:13.5px;font-weight:700;
-  color:var(--ink-2);cursor:pointer;border-bottom:2.5px solid transparent}
-nav button.on{color:var(--blue);border-bottom-color:var(--blue)}
-header.top .right{margin-left:auto}
-main{max-width:1240px;margin:0 auto;padding:24px 24px 96px}
-.panel-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
-  margin-bottom:14px;flex-wrap:wrap}
-.panel-head h2{font-size:17px;font-weight:800;letter-spacing:-.03em;margin:0 0 4px}
-.panel-head p{margin:0;font-size:12.5px;color:var(--ink-2)}
+/* ---------- 로그인 ---------- */
+#gate{min-height:100dvh;display:grid;place-items:center;padding:24px;
+  background:radial-gradient(900px 520px at 50% -12%, #DCE8FB 0%, var(--canvas) 62%)}
+.gate-card{width:100%;max-width:372px;background:var(--paper);border:1px solid var(--line);
+  border-radius:20px;padding:36px 32px;box-shadow:0 30px 60px -40px rgba(11,42,91,.4)}
+.gate-card>img{height:18px;width:auto;margin-bottom:26px}
+.gate-card h1{font-size:21px;font-weight:800;letter-spacing:-.035em;margin:0 0 6px}
+.gate-card>p{margin:0 0 26px;font-size:13px;color:var(--ink-2)}
+.msg{margin-top:14px;font-size:13px;color:var(--warn);min-height:19px;line-height:1.5}
 
-/* 표 */
-table{width:100%;border-collapse:collapse;background:var(--paper);
-  border:1px solid var(--line);border-radius:12px;overflow:hidden}
-th{background:var(--soft);color:var(--navy);font-size:12px;font-weight:800;
-  text-align:left;padding:10px 12px;white-space:nowrap}
-td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:middle}
-tr.off{background:#FAFBFD;color:#9BA5B6}
-td input[type=text],td input[type=date]{padding:7px 9px;font-size:13px;border-radius:7px}
-.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:12.5px}
-th.ctr,td.ctr{text-align:center;width:96px}
-input[type=checkbox]{width:17px;height:17px;accent-color:var(--blue);cursor:pointer;margin:0}
+/* ---------- 레이아웃 ---------- */
+#app{display:grid;grid-template-columns:232px 1fr;min-height:100dvh}
 
-/* 공유 설정 */
-.perm-bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--paper);
-  border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin-bottom:14px}
-select{padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;font-size:14px;
-  background:var(--paper);min-width:230px;color:var(--ink)}
-.count{font-size:12.5px;color:var(--ink-2);margin-left:auto}
-.count b{color:var(--navy)}
-.th-check{display:inline-flex;align-items:center;gap:7px;cursor:pointer;user-select:none}
-.course-row td{background:#F5F8FE;font-size:12px;font-weight:800;color:var(--navy);letter-spacing:.03em}
-.course-row td.ctr{background:#F5F8FE}
-.hint{font-size:11px;font-weight:600;color:var(--ink-2);letter-spacing:0}
+.rail{background:linear-gradient(180deg,var(--rail),var(--navy-deep));color:#fff;
+  padding:26px 18px;display:flex;flex-direction:column;gap:30px;position:sticky;top:0;height:100dvh}
+.rail>img{height:17px;width:auto;filter:brightness(0) invert(1);opacity:.92;margin-left:8px}
+.rail nav{display:flex;flex-direction:column;gap:3px}
+.rail nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:none;border:0;padding:11px 12px;border-radius:10px;cursor:pointer;
+  font-size:13.5px;font-weight:600;color:rgba(255,255,255,.62);transition:.15s}
+.rail nav button:hover{background:rgba(255,255,255,.07);color:#fff}
+.rail nav button.on{background:rgba(53,200,245,.16);color:#fff;font-weight:700}
+.rail nav button .tag{margin-left:auto;font-size:11px;font-weight:700;
+  color:rgba(255,255,255,.5);font-variant-numeric:tabular-nums}
+.rail nav button.on .tag{color:var(--cyan)}
+.rail .bottom{margin-top:auto;display:flex;flex-direction:column;gap:12px}
+.rail .bottom .u{font-size:11.5px;color:rgba(255,255,255,.42);padding:0 12px;line-height:1.5}
+.rail .bottom button{background:rgba(255,255,255,.08);border:0;color:rgba(255,255,255,.8);
+  padding:10px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s}
+.rail .bottom button:hover{background:rgba(255,255,255,.16);color:#fff}
 
-/* 저장 바 */
-.savebar{position:fixed;left:0;right:0;bottom:0;background:var(--paper);
-  border-top:1px solid var(--line);padding:12px 24px;display:flex;justify-content:flex-end;
-  gap:10px;align-items:center;box-shadow:0 -8px 24px -20px rgba(0,0,0,.4);z-index:15}
-.savebar .state{margin-right:auto;font-size:13px;color:var(--ink-2)}
-.savebar .state.ok{color:var(--ok);font-weight:700}
-.savebar .state.err{color:var(--warn);font-weight:700}
-.loading{padding:56px;text-align:center;color:var(--ink-2)}
+.view{padding:34px 34px 130px;max-width:1180px}
+.head{margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.head h2{font-size:24px;font-weight:800;letter-spacing:-.04em;margin:0 0 6px;line-height:1.2}
+.head p{margin:0;font-size:13px;color:var(--ink-2);max-width:62ch}
 
-@media (max-width:720px){
-  header.top{padding:0 14px;gap:10px;flex-wrap:wrap}
-  nav button{padding:14px 10px;font-size:13px}
-  main{padding:18px 14px 96px}
-  .savebar{padding:10px 14px}
-  select{min-width:0;flex:1}
+/* ---------- 카드 · 표 ---------- */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden;box-shadow:0 1px 2px rgba(11,42,91,.04)}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--paper);color:var(--ink-2);font-size:11.5px;font-weight:800;
+  letter-spacing:.06em;text-align:left;padding:13px 14px;white-space:nowrap;
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+tbody td{padding:9px 14px;border-bottom:1px solid #F0F3F8;vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#FAFCFF}
+tr.off td{color:var(--ink-3)}
+tr.off td.mono{opacity:.6}
+td input[type=text],td input[type=date]{padding:8px 10px;font-size:13px;border-radius:8px;
+  border-color:transparent;background:#F7F9FC}
+td input[type=text]:hover,td input[type=date]:hover{background:#F1F5FB}
+td input[type=text]:focus,td input[type=date]:focus{background:var(--paper);border-color:var(--blue)}
+th.ctr,td.ctr{text-align:center;width:104px}
+th.ctr:last-child,td.ctr:last-child{width:70px}
+.blank{padding:56px 20px;text-align:center;color:var(--ink-3);font-size:13.5px}
+
+/* ---------- 공유 설정 ---------- */
+.toolbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+select{padding:11px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;
+  font-weight:600;background:var(--paper);min-width:250px;cursor:pointer;outline:none}
+select:focus{border-color:var(--blue)}
+.chips{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--paper);
+  border:1px solid var(--line);border-radius:99px;padding:7px 14px;font-size:12.5px;
+  font-weight:600;color:var(--ink-2)}
+.chip b{font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums}
+.chip .d{width:7px;height:7px;border-radius:50%}
+.chip .d.play{background:var(--blue)}
+.chip .d.dl{background:var(--amber)}
+
+.th-check{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
+  font-size:11.5px;font-weight:800;letter-spacing:.06em;color:var(--ink-2)}
+tr.group td{background:var(--soft);padding:11px 14px;border-bottom:1px solid #DCE7F8;
+  border-top:1px solid #DCE7F8}
+tr.group:hover td{background:var(--soft)}
+tr.group td:first-child{box-shadow:inset 3px 0 0 var(--blue)}
+.gname{font-size:12.5px;font-weight:800;color:var(--navy);letter-spacing:-.01em}
+.gcount{font-size:11.5px;font-weight:600;color:var(--ink-2);margin-left:8px}
+.title-cell{font-weight:600;letter-spacing:-.015em}
+.badge{display:inline-block;margin-left:8px;font-size:10.5px;font-weight:800;letter-spacing:.04em;
+  color:var(--ink-3);background:#F1F4F9;border-radius:5px;padding:2px 6px}
+
+/* ---------- 저장 바 ---------- */
+.savebar{position:fixed;left:232px;right:0;bottom:0;padding:14px 34px;
+  background:linear-gradient(to top,var(--canvas) 62%,rgba(241,244,249,0));
+  display:flex;gap:12px;align-items:center;z-index:20;pointer-events:none}
+.savebar>*{pointer-events:auto}
+.state{margin-right:auto;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:9px}
+.state::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--ink-3);flex-shrink:0}
+.state:empty{display:none}
+.state.ok{color:var(--ok);font-weight:700}
+.state.ok::before{background:var(--ok)}
+.state.err{color:var(--warn);font-weight:700}
+.state.err::before{background:var(--warn)}
+.state.edit::before{background:var(--amber)}
+.savebar .btn{box-shadow:0 10px 26px -14px rgba(11,42,91,.6)}
+
+/* ---------- 반응형 ---------- */
+@media (max-width:900px){
+  #app{grid-template-columns:1fr}
+  .rail{position:static;height:auto;flex-direction:row;align-items:center;gap:14px;
+    padding:12px 16px;overflow-x:auto}
+  .rail>img{margin:0;flex-shrink:0}
+  .rail nav{flex-direction:row;gap:2px}
+  .rail nav button{padding:9px 12px;white-space:nowrap}
+  .rail nav button .tag{display:none}
+  .rail .bottom{margin:0 0 0 auto;flex-direction:row}
+  .rail .bottom .u{display:none}
+  .view{padding:22px 16px 120px}
+  .savebar{left:0;padding:12px 16px}
+  .chips{margin-left:0;width:100%}
+  select{min-width:0;width:100%}
+  .card{overflow-x:auto}
+  table{min-width:640px}
 }
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
 </style>
 </head>
 <body>
@@ -107,65 +171,70 @@ select{padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;font-si
 <section id="gate">
   <div class="gate-card">
     <img src="assets/kbrain-logo.png" alt="K-BRAIN" width="141" height="37">
-    <h1>관리자 로그인</h1>
-    <p>과정영상 공유 관리</p>
+    <h1>관리자 콘솔</h1>
+    <p>고객사별 과정영상 공유를 관리합니다.</p>
     <label for="pw">비밀번호</label>
     <input type="password" id="pw" autocomplete="current-password">
-    <button class="btn full" id="loginBtn">로그인</button>
+    <button class="btn" id="loginBtn" style="width:100%;margin-top:16px;padding:13px">로그인</button>
     <div class="msg" id="loginMsg"></div>
   </div>
 </section>
 
 <!-- 콘솔 -->
 <div id="app" class="hidden">
-  <header class="top">
-    <img class="logo" src="assets/kbrain-logo.png" alt="K-BRAIN" width="141" height="37">
+  <aside class="rail">
+    <img src="assets/kbrain-logo.png" alt="K-BRAIN" width="141" height="37">
     <nav>
       <button data-tab="perms" class="on">공유 설정</button>
-      <button data-tab="clients">고객사</button>
-      <button data-tab="videos">영상 목록</button>
+      <button data-tab="clients">고객사<span class="tag" id="tagClients"></span></button>
+      <button data-tab="videos">영상 목록<span class="tag" id="tagVideos"></span></button>
     </nav>
-    <button class="btn sm ghost right" id="logoutBtn">로그아웃</button>
-  </header>
+    <div class="bottom">
+      <div class="u">과정영상 공유 관리<br>K-BRAIN HRD사업본부</div>
+      <button id="logoutBtn">로그아웃</button>
+    </div>
+  </aside>
 
   <main>
     <!-- 공유 설정 -->
-    <section id="tab-perms">
-      <div class="panel-head">
+    <section class="view" id="tab-perms">
+      <div class="head">
         <div>
           <h2>공유 설정</h2>
-          <p>고객사를 고른 뒤 공유할 영상에 체크하세요. 과정 줄의 체크박스로 해당 과정을 한 번에 켜고 끌 수 있습니다.</p>
+          <p>고객사를 고른 뒤 공유할 영상에 체크하세요. 과정 줄의 체크박스로 그 과정을, 표 머리글의 체크박스로 전체를 한 번에 켜고 끌 수 있습니다.</p>
         </div>
       </div>
-      <div class="perm-bar">
+
+      <div class="toolbar">
         <select id="permClient"></select>
-        <span class="count" id="permCount"></span>
+        <div class="chips" id="permChips"></div>
       </div>
-      <table id="permTable"></table>
+
+      <div class="card"><table id="permTable"></table></div>
     </section>
 
     <!-- 고객사 -->
-    <section id="tab-clients" class="hidden">
-      <div class="panel-head">
+    <section class="view hidden" id="tab-clients">
+      <div class="head">
         <div>
           <h2>고객사</h2>
-          <p>접속코드는 고객사에 전달할 값입니다. 중복될 수 없습니다.</p>
+          <p>접속코드는 고객사에 전달할 값입니다. 중복될 수 없으며, 사용을 끄면 즉시 접속이 막힙니다.</p>
         </div>
         <button class="btn sm" id="addClient">고객사 추가</button>
       </div>
-      <table id="clientTable"></table>
+      <div class="card"><table id="clientTable"></table></div>
     </section>
 
     <!-- 영상 -->
-    <section id="tab-videos" class="hidden">
-      <div class="panel-head">
+    <section class="view hidden" id="tab-videos">
+      <div class="head">
         <div>
           <h2>영상 목록</h2>
-          <p>Vimeo 주소창의 URL을 그대로 붙여넣으세요. 비공개 영상은 해시가 포함된 전체 URL이 필요합니다.</p>
+          <p>Vimeo 주소창의 URL을 그대로 붙여넣으세요. 비공개 영상은 해시가 포함된 전체 URL이 필요합니다. 과정명이 같은 영상끼리 묶여서 표시됩니다.</p>
         </div>
         <button class="btn sm" id="addVideo">영상 추가</button>
       </div>
-      <table id="videoTable"></table>
+      <div class="card"><table id="videoTable"></table></div>
     </section>
   </main>
 
@@ -219,35 +288,42 @@ async function login() {
 }
 
 /* ---------- 탭 ---------- */
-document.querySelectorAll('nav button').forEach(function (b) {
+document.querySelectorAll('.rail nav button').forEach(function (b) {
   b.addEventListener('click', function () {
-    document.querySelectorAll('nav button').forEach(function (x) { x.classList.toggle('on', x === b); });
+    document.querySelectorAll('.rail nav button').forEach(function (x) {
+      x.classList.toggle('on', x === b);
+    });
     ['perms', 'clients', 'videos'].forEach(function (t) {
       $('#tab-' + t).classList.toggle('hidden', t !== b.dataset.tab);
     });
-    setState('');
+    window.scrollTo(0, 0);
   });
 });
 
 /* ---------- 렌더 ---------- */
-function renderAll() { renderClients(); renderVideos(); renderPermClients(); renderPerms(); }
+function renderAll() {
+  $('#tagClients').textContent = D.clients.length;
+  $('#tagVideos').textContent = D.videos.length;
+  renderClients(); renderVideos(); renderPermClients(); renderPerms();
+}
 
 function renderClients() {
   const rows = D.clients.map(function (c, i) {
     return '<tr' + (c.active ? '' : ' class="off"') + '>' +
-      '<td><input type="text" class="mono" value="' + esc(c.id) + '" data-i="' + i + '" data-f="id" style="width:78px"></td>' +
+      '<td><input type="text" class="mono" value="' + esc(c.id) + '" data-i="' + i + '" data-f="id" style="width:80px"></td>' +
       '<td><input type="text" value="' + esc(c.name) + '" data-i="' + i + '" data-f="name"></td>' +
-      '<td><input type="text" class="mono" value="' + esc(c.code) + '" data-i="' + i + '" data-f="code" style="width:130px"></td>' +
-      '<td><input type="date" value="' + esc(c.expiresAt) + '" data-i="' + i + '" data-f="expiresAt" style="width:148px"></td>' +
+      '<td><input type="text" class="mono" value="' + esc(c.code) + '" data-i="' + i + '" data-f="code" style="width:136px"></td>' +
+      '<td><input type="date" value="' + esc(c.expiresAt) + '" data-i="' + i + '" data-f="expiresAt" style="width:152px"></td>' +
       '<td class="ctr"><input type="checkbox" ' + (c.active ? 'checked' : '') + ' data-i="' + i + '" data-f="active"></td>' +
-      '<td class="ctr"><button class="danger" data-del="' + i + '">삭제</button></td>' +
+      '<td class="ctr"><button class="link-danger" data-del="' + i + '">삭제</button></td>' +
     '</tr>';
   }).join('');
 
   $('#clientTable').innerHTML =
-    '<tr><th>고객사ID</th><th>고객사명</th><th>접속코드</th><th>만료일</th>' +
-    '<th class="ctr">사용</th><th class="ctr"></th></tr>' +
-    (rows || '<tr><td colspan="6" class="loading">고객사를 추가하세요.</td></tr>');
+    '<thead><tr><th>고객사ID</th><th>고객사명</th><th>접속코드</th><th>만료일</th>' +
+    '<th class="ctr">사용</th><th class="ctr"></th></tr></thead><tbody>' +
+    (rows || '<tr><td colspan="6" class="blank">등록된 고객사가 없습니다. 고객사 추가를 눌러 시작하세요.</td></tr>') +
+    '</tbody>';
 
   bindEdits('#clientTable', D.clients);
   $('#clientTable').querySelectorAll('[data-del]').forEach(function (b) {
@@ -256,7 +332,7 @@ function renderClients() {
       if (!confirm('"' + (c.name || c.id) + '" 고객사를 삭제할까요?\n공유 설정도 함께 지워집니다.')) return;
       delete D.perms[c.id];
       D.clients.splice(+b.dataset.del, 1);
-      renderAll(); setState('삭제됨 — 저장을 눌러야 반영됩니다');
+      renderAll(); setState('삭제됨 · 저장을 눌러야 반영됩니다', 'edit');
     });
   });
 }
@@ -265,19 +341,20 @@ function renderVideos() {
   const rows = D.videos.map(function (v, i) {
     return '<tr' + (v.active ? '' : ' class="off"') + '>' +
       '<td class="mono">' + esc(v.id) + '</td>' +
-      '<td><input type="text" value="' + esc(v.course) + '" data-i="' + i + '" data-f="course" style="width:150px"></td>' +
+      '<td><input type="text" value="' + esc(v.course) + '" data-i="' + i + '" data-f="course" style="width:160px"></td>' +
       '<td><input type="text" value="' + esc(v.title) + '" data-i="' + i + '" data-f="title"></td>' +
       '<td><input type="text" class="mono" value="' + esc(v.url) + '" data-i="' + i + '" data-f="url" placeholder="https://vimeo.com/123456789/abcdef"></td>' +
-      '<td><input type="text" value="' + esc(v.duration) + '" data-i="' + i + '" data-f="duration" style="width:66px"></td>' +
+      '<td><input type="text" class="mono" value="' + esc(v.duration) + '" data-i="' + i + '" data-f="duration" style="width:68px"></td>' +
       '<td class="ctr"><input type="checkbox" ' + (v.active ? 'checked' : '') + ' data-i="' + i + '" data-f="active"></td>' +
-      '<td class="ctr"><button class="danger" data-del="' + i + '">삭제</button></td>' +
+      '<td class="ctr"><button class="link-danger" data-del="' + i + '">삭제</button></td>' +
     '</tr>';
   }).join('');
 
   $('#videoTable').innerHTML =
-    '<tr><th>영상ID</th><th>과정명</th><th>영상제목</th><th>영상URL</th><th>시간</th>' +
-    '<th class="ctr">사용</th><th class="ctr"></th></tr>' +
-    (rows || '<tr><td colspan="7" class="loading">영상을 추가하세요.</td></tr>');
+    '<thead><tr><th>영상ID</th><th>과정명</th><th>영상제목</th><th>영상URL</th><th>시간</th>' +
+    '<th class="ctr">사용</th><th class="ctr"></th></tr></thead><tbody>' +
+    (rows || '<tr><td colspan="7" class="blank">등록된 영상이 없습니다. 영상 추가를 눌러 시작하세요.</td></tr>') +
+    '</tbody>';
 
   bindEdits('#videoTable', D.videos);
   $('#videoTable').querySelectorAll('[data-del]').forEach(function (b) {
@@ -286,7 +363,7 @@ function renderVideos() {
       if (!confirm('"' + (v.title || v.id) + '" 영상을 목록에서 삭제할까요?')) return;
       Object.keys(D.perms).forEach(function (cid) { delete D.perms[cid][v.id]; });
       D.videos.splice(+b.dataset.del, 1);
-      renderAll(); setState('삭제됨 — 저장을 눌러야 반영됩니다');
+      renderAll(); setState('삭제됨 · 저장을 눌러야 반영됩니다', 'edit');
     });
   });
 }
@@ -295,7 +372,7 @@ function bindEdits(sel, arr) {
   $(sel).querySelectorAll('input[data-f]').forEach(function (el) {
     el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', function () {
       arr[+el.dataset.i][el.dataset.f] = el.type === 'checkbox' ? el.checked : el.value;
-      setState('수정됨 — 저장을 눌러야 반영됩니다');
+      setState('수정됨 · 저장을 눌러야 반영됩니다', 'edit');
     });
   });
 }
@@ -305,28 +382,22 @@ function renderPermClients() {
   const prev = sel.value;
   sel.innerHTML = D.clients.map(function (c) {
     return '<option value="' + esc(c.id) + '">' + esc(c.name || c.id) +
-           (c.code ? ' (' + esc(c.code) + ')' : '') + '</option>';
+           (c.code ? '  ·  ' + esc(c.code) : '') + (c.active ? '' : '  (사용중지)') + '</option>';
   }).join('');
   if (prev) sel.value = prev;
 }
 
-/* 현재 고객사의 권한 객체 */
+/* ---------- 권한 조작 ---------- */
 function permsOf(cid) {
   if (!D.perms[cid]) D.perms[cid] = {};
   return D.perms[cid];
 }
 
-function ensure(P, id) {
-  if (!P[id]) P[id] = { play: false, download: false };
-  return P[id];
-}
-
-/* 한 항목의 값을 바꾸면서 재생·다운로드 관계를 유지 */
 function setFlag(P, id, key, on) {
-  const p = ensure(P, id);
-  p[key] = on;
-  if (key === 'download' && on) p.play = true;     // 다운로드는 재생을 포함
-  if (key === 'play' && !on) p.download = false;   // 재생을 끄면 다운로드도 해제
+  if (!P[id]) P[id] = { play: false, download: false };
+  P[id][key] = on;
+  if (key === 'download' && on) P[id].play = true;     // 다운로드는 재생을 포함
+  if (key === 'play' && !on) P[id].download = false;   // 재생을 끄면 다운로드도 해제
 }
 
 function renderPerms() {
@@ -334,25 +405,21 @@ function renderPerms() {
   const table = $('#permTable');
 
   if (!cid) {
-    table.innerHTML = '<tr><td class="loading">고객사를 먼저 추가하세요.</td></tr>';
-    $('#permCount').textContent = '';
+    table.innerHTML = '<tbody><tr><td class="blank">고객사를 먼저 등록하세요.</td></tr></tbody>';
+    $('#permChips').innerHTML = '';
     return;
   }
   const P = permsOf(cid);
 
-  let html = '<tr>' +
-    '<th style="width:78px">영상ID</th><th>영상제목</th>' +
-    '<th class="ctr"><label class="th-check"><input type="checkbox" data-all="play">재생</label></th>' +
-    '<th class="ctr"><label class="th-check"><input type="checkbox" data-all="download">다운로드</label></th>' +
-  '</tr>';
-
-  let course = null, play = 0, dl = 0;
+  let body = '', course = null, play = 0, dl = 0;
 
   D.videos.forEach(function (v) {
     if (v.course !== course) {
       course = v.course;
-      html += '<tr class="course-row">' +
-          '<td colspan="2">' + esc(course || '기타') + '</td>' +
+      const list = D.videos.filter(function (x) { return x.course === course; });
+      body += '<tr class="group">' +
+          '<td colspan="2"><span class="gname">' + esc(course || '기타') + '</span>' +
+            '<span class="gcount">' + list.length + '편</span></td>' +
           '<td class="ctr"><input type="checkbox" data-course="' + esc(course) + '" data-k="play"></td>' +
           '<td class="ctr"><input type="checkbox" data-course="' + esc(course) + '" data-k="download"></td>' +
         '</tr>';
@@ -361,29 +428,39 @@ function renderPerms() {
     if (p.play) play++;
     if (p.download) dl++;
 
-    html += '<tr' + (v.active ? '' : ' class="off"') + '>' +
+    body += '<tr' + (v.active ? '' : ' class="off"') + '>' +
       '<td class="mono">' + esc(v.id) + '</td>' +
-      '<td>' + esc(v.title) + (v.active ? '' : ' <span class="hint">(사용중지)</span>') + '</td>' +
+      '<td class="title-cell">' + esc(v.title) +
+        (v.active ? '' : '<span class="badge">사용중지</span>') + '</td>' +
       '<td class="ctr"><input type="checkbox" data-v="' + esc(v.id) + '" data-k="play" ' + (p.play ? 'checked' : '') + '></td>' +
       '<td class="ctr"><input type="checkbox" data-v="' + esc(v.id) + '" data-k="download" ' + (p.download ? 'checked' : '') + '></td>' +
     '</tr>';
   });
 
-  table.innerHTML = html;
-  $('#permCount').innerHTML = '재생 <b>' + play + '</b> · 다운로드 <b>' + dl + '</b> / 전체 ' + D.videos.length + '편';
+  table.innerHTML =
+    '<thead><tr>' +
+      '<th style="width:82px">영상ID</th><th>영상제목</th>' +
+      '<th class="ctr"><label class="th-check"><input type="checkbox" data-all="play">재생</label></th>' +
+      '<th class="ctr"><label class="th-check"><input type="checkbox" data-all="download">다운로드</label></th>' +
+    '</tr></thead><tbody>' +
+    (body || '<tr><td colspan="4" class="blank">등록된 영상이 없습니다.</td></tr>') +
+    '</tbody>';
+
+  $('#permChips').innerHTML =
+    '<span class="chip"><span class="d play"></span>재생 <b>' + play + '</b></span>' +
+    '<span class="chip"><span class="d dl"></span>다운로드 <b>' + dl + '</b></span>' +
+    '<span class="chip">전체 <b>' + D.videos.length + '</b>편</span>';
 
   syncGroupBoxes(P);
 
-  /* 개별 항목 */
   table.querySelectorAll('input[data-v]').forEach(function (el) {
     el.addEventListener('change', function () {
       setFlag(P, el.dataset.v, el.dataset.k, el.checked);
       renderPerms();
-      setState('수정됨 — 저장을 눌러야 반영됩니다');
+      setState('수정됨 · 저장을 눌러야 반영됩니다', 'edit');
     });
   });
 
-  /* 과정 단위 */
   table.querySelectorAll('input[data-course]').forEach(function (el) {
     el.addEventListener('change', function () {
       const on = el.checked, k = el.dataset.k;
@@ -393,22 +470,21 @@ function renderPerms() {
       });
       renderPerms();
       setState('"' + el.dataset.course + '" 과정 ' + (on ? '전체 선택' : '전체 해제') +
-               ' — 저장을 눌러야 반영됩니다');
+               ' · 저장을 눌러야 반영됩니다', 'edit');
     });
   });
 
-  /* 전체 */
   table.querySelectorAll('input[data-all]').forEach(function (el) {
     el.addEventListener('change', function () {
       const on = el.checked, k = el.dataset.all;
       D.videos.forEach(function (v) { setFlag(P, v.id, k, on); });
       renderPerms();
-      setState('전체 ' + (on ? '선택' : '해제') + ' — 저장을 눌러야 반영됩니다');
+      setState('전체 ' + (on ? '선택' : '해제') + ' · 저장을 눌러야 반영됩니다', 'edit');
     });
   });
 }
 
-/* 과정·전체 체크박스 상태를 하위 항목에 맞춰 갱신 (일부만 선택되면 중간 상태) */
+/* 과정·전체 체크박스를 하위 항목 상태에 맞춘다 (일부만 선택되면 중간 상태) */
 function syncGroupBoxes(P) {
   const table = $('#permTable');
 
@@ -438,8 +514,8 @@ $('#addClient').addEventListener('click', function () {
   while (used['C' + ('00' + n).slice(-3)]) n++;
 
   D.clients.push({ id: 'C' + ('00' + n).slice(-3), name: '', code: '', expiresAt: '', active: true });
-  renderClients(); renderPermClients();
-  setState('추가됨 — 고객사명과 접속코드를 입력하세요');
+  renderAll();
+  setState('고객사 추가됨 · 고객사명과 접속코드를 입력하세요', 'edit');
 });
 
 $('#addVideo').addEventListener('click', function () {
@@ -449,8 +525,8 @@ $('#addVideo').addEventListener('click', function () {
     if (m) max = Math.max(max, +m[1]);
   });
   D.videos.push({ id: 'V' + ('000' + (max + 1)).slice(-3), course: '', title: '', url: '', duration: '', active: true });
-  renderVideos();
-  setState('추가됨 — 제목과 URL을 입력하세요');
+  renderAll();
+  setState('영상 추가됨 · 과정명과 URL을 입력하세요', 'edit');
 });
 
 /* ---------- 저장 ---------- */
@@ -475,9 +551,9 @@ async function save() {
     r = await call('admin.savePerms', { perms: D.perms });
     if (!r.ok) throw new Error(r.message);
 
-    setState('저장되었습니다 (' + new Date().toLocaleTimeString('ko-KR') + ')', 'ok');
+    setState('저장되었습니다 · ' + new Date().toLocaleTimeString('ko-KR'), 'ok');
   } catch (err) {
-    setState('저장 실패: ' + err.message, 'err');
+    setState('저장 실패 · ' + err.message, 'err');
   } finally {
     btn.disabled = false; btn.textContent = '저장';
   }
@@ -485,7 +561,7 @@ async function save() {
 
 function setState(msg, kind) {
   const el = $('#state');
-  el.textContent = msg;
+  el.textContent = msg || '';
   el.className = 'state' + (kind ? ' ' + kind : '');
 }
 
