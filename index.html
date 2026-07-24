@@ -264,21 +264,42 @@ const DL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
   'stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/>' +
   '<path d="M4 21h16"/></svg>';
 
-$('#enterBtn').addEventListener('click', enter);
-$('#code').addEventListener('keydown', function (e) { if (e.key === 'Enter') enter(); });
+$('#enterBtn').addEventListener('click', function () { enter(false); });
+$('#code').addEventListener('keydown', function (e) { if (e.key === 'Enter') enter(false); });
 $('#closeBtn').addEventListener('click', closePlayer);
 $('#modal').addEventListener('click', function (e) { if (e.target === this) closePlayer(); });
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePlayer(); });
-$('#outBtn').addEventListener('click', function () { location.reload(); });
+
+$('#outBtn').addEventListener('click', function () {
+  try { sessionStorage.removeItem('kb_code'); sessionStorage.removeItem('kb_scroll'); } catch (e) {}
+  location.reload();
+});
+
+/* 새로고침 대비: 접속코드와 스크롤 위치를 세션에 보관 */
+function saveScroll() {
+  if (!DATA) return;
+  try { sessionStorage.setItem('kb_scroll', String(window.scrollY)); } catch (e) {}
+}
+window.addEventListener('beforeunload', saveScroll);
+window.addEventListener('pagehide', saveScroll);
+
+/* 페이지가 열릴 때 이전 세션이 있으면 그대로 복원 */
+window.addEventListener('DOMContentLoaded', function () {
+  let saved = '';
+  try { saved = sessionStorage.getItem('kb_code') || ''; } catch (e) {}
+  if (!saved) return;
+  $('#code').value = saved;
+  enter(true);
+});
 
 /* ---------- 접속 ---------- */
-async function enter() {
+async function enter(restoring) {
   const code = $('#code').value.trim();
   const btn = $('#enterBtn');
   $('#msg').textContent = '';
   if (!code) { $('#msg').textContent = '접속코드를 입력해 주세요.'; return; }
 
-  btn.disabled = true; btn.textContent = '확인 중';
+  btn.disabled = true; btn.textContent = restoring ? '불러오는 중' : '확인 중';
   try {
     const res = await fetch(API, {
       method: 'POST',
@@ -286,9 +307,15 @@ async function enter() {
       body: JSON.stringify({ action: 'access', code: code })
     });
     const data = await res.json();
-    if (!data.ok) { $('#msg').textContent = data.message; return; }
+    if (!data.ok) {
+      /* 복원 중 실패했다면 저장된 코드를 버리고 입력 화면으로 */
+      try { sessionStorage.removeItem('kb_code'); } catch (e) {}
+      $('#msg').textContent = data.message;
+      return;
+    }
+    try { sessionStorage.setItem('kb_code', code); } catch (e) {}
     DATA = data;
-    render();
+    render(restoring);
   } catch (err) {
     $('#msg').textContent = '연결하지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.';
   } finally {
@@ -307,7 +334,7 @@ function coverFor(course) {
 }
 
 /* ---------- 렌더 ---------- */
-function render() {
+function render(restoring) {
   $('#gate').classList.add('hidden');
   $('#library').classList.remove('hidden');
 
@@ -360,6 +387,12 @@ function render() {
   }).join('');
 
   bindBands(courses, names);
+
+  if (restoring) {
+    let y = 0;
+    try { y = parseInt(sessionStorage.getItem('kb_scroll') || '0', 10); } catch (e) {}
+    if (y > 0) requestAnimationFrame(function () { window.scrollTo(0, y); });
+  }
 }
 
 function groupByCourse(items) {
