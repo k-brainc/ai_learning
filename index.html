@@ -122,7 +122,7 @@ label{display:block;font-size:11.5px;font-weight:800;letter-spacing:.1em;color:v
 .eps{list-style:none;margin:0;padding:14px 20px}
 .ep{
   display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:13px;
-  padding:12px 10px;border-radius:11px;width:100%;text-align:left;
+  padding:12px 10px;border-radius:11px;width:100%;text-align:left;cursor:pointer;
   border-bottom:1px solid var(--line);transition:background .16s;
 }
 .eps li:last-child .ep{border-bottom:0}
@@ -130,8 +130,8 @@ label{display:block;font-size:11.5px;font-weight:800;letter-spacing:.1em;color:v
 .ep-no{font-size:12.5px;font-weight:700;color:#AEBACC;transition:color .16s}
 .ep:hover .ep-no,.ep.active .ep-no{color:var(--blue)}
 .ep-title{font-size:14.5px;font-weight:600;letter-spacing:-.018em;line-height:1.45}
-.ep-side{display:flex;align-items:center;gap:9px}
-.ep-dur{font-size:12px;color:var(--ink-2)}
+.ep-side{display:flex;align-items:center;gap:9px;flex-shrink:0;white-space:nowrap}
+.ep-dur{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .dl{display:inline-grid;place-items:center;width:29px;height:29px;border-radius:8px;
   background:rgba(224,138,30,.13);color:#96620E;transition:.16s;border:0;cursor:pointer;padding:0}
 .dl:hover{background:var(--amber);color:#fff}
@@ -390,13 +390,13 @@ function render(restoring) {
     const rows = eps.map(function (v, i) {
       const dl = v.canDownload
         ? '<button class="dl" data-dl="' + esc(v.id) + '" title="다운로드">' + DL_ICON + '</button>' : '';
-      return '<li><button class="ep" data-id="' + esc(v.id) + '">' +
+      return '<li><div class="ep" role="button" tabindex="0" data-id="' + esc(v.id) + '">' +
           '<span class="ep-no num">' + ('0' + (i + 1)).slice(-2) + '</span>' +
           '<span class="ep-title">' + esc(v.title) + '</span>' +
           '<span class="ep-side">' +
             (v.duration ? '<span class="ep-dur num">' + esc(v.duration) + '</span>' : '') +
             dl + '<span class="dot"></span>' +
-          '</span></button></li>';
+          '</span></div></li>';
     }).join('');
 
     return '<section class="band" data-band="' + ci + '">' +
@@ -454,6 +454,12 @@ function bindBands(courses, names) {
       btn.addEventListener('focus', show);
       btn.addEventListener('click', function (e) {
         if (e.target.closest('.dl')) return;   // 다운로드 버튼은 재생을 열지 않는다
+        openPlayer(v);
+      });
+      btn.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        if (e.target.closest('.dl')) return;
+        e.preventDefault();
         openPlayer(v);
       });
     });
