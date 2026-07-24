@@ -4,25 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>이러닝 과정영상 뷰어 | K-Brain</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/paperlogy@1.0/Paperlogy.css">
 <style>
 :root{
   --purple:#7132F5; --purple-deep:#4B1BB0; --purple-soft:#F3EEFF;
   --ink:#16121F; --ink-2:#5C5470; --line:#E7E2F2; --bg:#FBFAFE; --white:#fff;
-  --radius:14px;
 }
 *{box-sizing:border-box}
-body{
-  margin:0; background:var(--bg); color:var(--ink);
-  font-family:'Paperlogy','Pretendard',-apple-system,'Malgun Gothic',sans-serif;
-  -webkit-font-smoothing:antialiased;
-}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
+  -webkit-font-smoothing:antialiased}
 button{font-family:inherit;cursor:pointer}
 .hidden{display:none !important}
 
-/* ---------- 게이트 ---------- */
 #gate{min-height:100vh;display:grid;place-items:center;padding:24px;
-  background:radial-gradient(1200px 600px at 50% -10%, #EDE4FF 0%, var(--bg) 60%);}
+  background:radial-gradient(1200px 600px at 50% -10%, #EDE4FF 0%, var(--bg) 60%)}
 .gate-card{width:100%;max-width:420px;background:var(--white);border:1px solid var(--line);
   border-radius:20px;padding:40px 32px;box-shadow:0 24px 60px -30px rgba(75,27,176,.35)}
 .brand{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--purple);margin-bottom:18px}
@@ -31,15 +26,14 @@ button{font-family:inherit;cursor:pointer}
 label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:8px}
 input[type=text]{width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;
   font-size:17px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;outline:none;
-  font-family:inherit;transition:border-color .15s, box-shadow .15s}
+  font-family:inherit;transition:border-color .15s,box-shadow .15s}
 input[type=text]:focus{border-color:var(--purple);box-shadow:0 0 0 4px var(--purple-soft)}
 .btn{width:100%;margin-top:16px;padding:14px;border:0;border-radius:12px;background:var(--purple);
-  color:#fff;font-size:15px;font-weight:700;transition:background .15s}
+  color:#fff;font-size:15px;font-weight:700}
 .btn:hover{background:var(--purple-deep)}
 .btn[disabled]{opacity:.55;cursor:progress}
 .msg{margin-top:14px;font-size:13px;color:#D6335A;min-height:18px;line-height:1.5}
 
-/* ---------- 라이브러리 ---------- */
 header.top{background:var(--white);border-bottom:1px solid var(--line);padding:18px 28px;
   display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .who{font-size:19px;font-weight:800;letter-spacing:-.02em}
@@ -52,7 +46,7 @@ main{max-width:1180px;margin:0 auto;padding:32px 28px 80px}
 .course h2{font-size:13px;font-weight:800;letter-spacing:.08em;color:var(--purple);
   margin:0 0 14px;padding-bottom:10px;border-bottom:1.5px solid var(--line)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px}
-.card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+.card{background:var(--white);border:1px solid var(--line);border-radius:14px;
   overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
 .card:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(75,27,176,.4)}
 .thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#2A1A55,#7132F5);position:relative;
@@ -71,7 +65,6 @@ main{max-width:1180px;margin:0 auto;padding:32px 28px 80px}
 .note{font-size:11.5px;color:var(--ink-2);opacity:.85}
 .empty{padding:60px 20px;text-align:center;color:var(--ink-2);font-size:14px}
 
-/* ---------- 플레이어 ---------- */
 #modal{position:fixed;inset:0;background:rgba(10,6,24,.82);display:grid;place-items:center;
   padding:20px;z-index:50}
 .player{width:100%;max-width:960px}
@@ -87,7 +80,6 @@ main{max-width:1180px;margin:0 auto;padding:32px 28px 80px}
 </head>
 <body>
 
-<!-- ===== 접속코드 입력 ===== -->
 <section id="gate">
   <div class="gate-card">
     <div class="brand">K-BRAIN E-LEARNING</div>
@@ -100,7 +92,6 @@ main{max-width:1180px;margin:0 auto;padding:32px 28px 80px}
   </div>
 </section>
 
-<!-- ===== 라이브러리 ===== -->
 <div id="library" class="hidden">
   <header class="top">
     <div class="who" id="clientName">고객사명<span id="expiry"></span></div>
@@ -109,7 +100,6 @@ main{max-width:1180px;margin:0 auto;padding:32px 28px 80px}
   <main id="list"></main>
 </div>
 
-<!-- ===== 플레이어 ===== -->
 <div id="modal" class="hidden">
   <div class="player">
     <div class="player-head">
@@ -121,8 +111,8 @@ main{max-width:1180px;margin:0 auto;padding:32px 28px 80px}
 </div>
 
 <script>
-/* Apps Script 웹앱 배포 URL로 교체하세요 */
-const API = 'https://script.google.com/macros/s/AKfycbxJU_SQCuGVjBshf485lOcBKRaHDe1GOr5bqWAwMQYRzqxZw8Zwobx1ZRN8y54iMoNwWw/exec';
+/* Apps Script 웹앱 배포 URL */
+const API = 'https://script.google.com/macros/s/XXXXXXXXXXXX/exec';
 
 const $ = function (s) { return document.querySelector(s); };
 let DATA = null;
@@ -145,7 +135,7 @@ async function enter() {
     const res = await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ code: code })
+      body: JSON.stringify({ action: 'access', code: code })
     });
     const data = await res.json();
     if (!data.ok) { $('#msg').textContent = data.message; return; }
@@ -172,16 +162,15 @@ function render() {
 
   const byCourse = {};
   DATA.items.forEach(function (v) {
-    (byCourse[v.course || '기타'] = byCourse[v.course || '기타'] || []).push(v);
+    (byCourse[v.course] = byCourse[v.course] || []).push(v);
   });
 
   list.innerHTML = Object.keys(byCourse).map(function (course) {
-    const cards = byCourse[course].map(function (v, i) {
+    const cards = byCourse[course].map(function (v) {
       const dl = v.canDownload
         ? '<a class="dl" href="' + esc(v.downloadUrl) + '" download>다운로드</a>'
         : '<span class="note" style="flex:1;align-self:center;text-align:center">재생 전용</span>';
-      return '' +
-        '<article class="card">' +
+      return '<article class="card">' +
           '<button class="thumb" data-id="' + esc(v.id) + '" aria-label="' + esc(v.title) + ' 재생">' +
             '<span class="play"></span>' +
             (v.duration ? '<span class="dur">' + esc(v.duration) + '</span>' : '') +
