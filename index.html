@@ -31,7 +31,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .num{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-variant-numeric:tabular-nums}
 :focus-visible{outline:2.5px solid var(--blue);outline-offset:3px;border-radius:4px}
 img{display:block;max-width:100%}
-.logo-chip img,.bar .logo{width:auto;max-width:none}
+.logo-w,.bar .logo{width:auto;max-width:none}
 
 /* ============ 접속 ============ */
 #gate{min-height:100dvh;display:grid;grid-template-columns:1.1fr .9fr}
@@ -44,9 +44,8 @@ img{display:block;max-width:100%}
   content:'';position:absolute;width:780px;height:780px;right:-260px;top:-180px;border-radius:50%;
   background:radial-gradient(circle at 35% 35%, rgba(53,200,245,.4), transparent 62%);
 }
-.logo-chip{position:relative;align-self:flex-start;background:#fff;border-radius:8px;
-  padding:9px 13px;line-height:0;box-shadow:0 8px 22px -12px rgba(0,0,0,.5)}
-.logo-chip img{height:18px;width:auto}
+.logo-w{position:relative;align-self:flex-start;height:19px;width:auto;max-width:none;
+  filter:brightness(0) invert(1);opacity:.95}
 .gate-copy{position:relative}
 .gate-copy h1{
   font-size:clamp(36px,4.2vw,58px);font-weight:800;line-height:1.1;
@@ -185,7 +184,7 @@ label{display:block;font-size:11.5px;font-weight:800;letter-spacing:.1em;color:v
 <!-- 접속 -->
 <section id="gate">
   <div class="gate-art">
-    <div class="logo-chip"><img src="assets/kbrain-logo.png" alt="K-BRAIN" width="141" height="37"></div>
+    <img class="logo-w" src="assets/kbrain-logo.png" alt="K-BRAIN" width="141" height="37">
     <div class="gate-copy">
       <h1>귀사를 위해 열린<br><em>AI 역량 과정</em></h1>
       <p>담당자가 전달한 접속코드 하나로 공유된 모든 과정영상을 바로 보실 수 있습니다.</p>
