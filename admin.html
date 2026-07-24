@@ -72,7 +72,11 @@ select{padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;font-si
 input[type=checkbox]{width:17px;height:17px;accent-color:var(--purple);cursor:pointer}
 th.ctr,td.ctr{text-align:center;width:84px}
 .course-row td{background:#F7F4FF;font-size:12px;font-weight:800;color:var(--purple-deep);
-  letter-spacing:.04em}
+  letter-spacing:.04em;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.course-acts{margin-left:auto;display:flex;gap:6px}
+.course-acts button{background:var(--white);border:1px solid #DCD2F5;border-radius:7px;
+  padding:4px 9px;font-size:11px;font-weight:700;color:var(--ink-2);cursor:pointer}
+.course-acts button:hover{border-color:var(--purple);color:var(--purple-deep);background:#FCFAFF}
 
 /* 저장 바 */
 .savebar{position:fixed;left:0;right:0;bottom:0;background:var(--white);
@@ -317,7 +321,15 @@ function renderPerms() {
   D.videos.forEach(function (v) {
     if (v.course !== course) {
       course = v.course;
-      html += '<tr class="course-row"><td colspan="4">' + esc(course) + '</td></tr>';
+      html += '<tr class="course-row"><td colspan="4">' +
+          '<span>' + esc(course) + '</span>' +
+          '<span class="course-acts">' +
+            '<button data-c="' + esc(course) + '" data-k="play" data-on="1">재생 전체</button>' +
+            '<button data-c="' + esc(course) + '" data-k="play" data-on="">재생 해제</button>' +
+            '<button data-c="' + esc(course) + '" data-k="download" data-on="1">다운로드 전체</button>' +
+            '<button data-c="' + esc(course) + '" data-k="download" data-on="">다운로드 해제</button>' +
+          '</span>' +
+        '</td></tr>';
     }
     const p = P[v.id] || {};
     if (p.play) play++;
@@ -332,6 +344,21 @@ function renderPerms() {
 
   table.innerHTML = html;
   $('#permCount').innerHTML = '재생 <b>' + play + '</b> / 다운로드 <b>' + dl + '</b> / 전체 ' + D.videos.length + '편';
+
+  table.querySelectorAll('.course-acts button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      const on = !!b.dataset.on, k = b.dataset.k;
+      D.videos.forEach(function (v) {
+        if (v.course !== b.dataset.c) return;
+        if (!P[v.id]) P[v.id] = { play: false, download: false };
+        P[v.id][k] = on;
+        if (k === 'download' && on) P[v.id].play = true;
+        if (k === 'play' && !on) P[v.id].download = false;
+      });
+      renderPerms();
+      setState('"' + b.dataset.c + '" 과정 일괄 변경 — 저장을 눌러야 반영됩니다');
+    });
+  });
 
   table.querySelectorAll('input[data-v]').forEach(function (el) {
     el.addEventListener('change', function () {
