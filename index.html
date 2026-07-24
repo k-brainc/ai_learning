@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>이러닝 과정영상 뷰어 | K-Brain</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/paperlogy@1.0/Paperlogy.css">
+<style>
+:root{
+  --purple:#7132F5; --purple-deep:#4B1BB0; --purple-soft:#F3EEFF;
+  --ink:#16121F; --ink-2:#5C5470; --line:#E7E2F2; --bg:#FBFAFE; --white:#fff;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Paperlogy','Pretendard',-apple-system,'Malgun Gothic',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none !important}
+
+/* ---------- 게이트 ---------- */
+#gate{min-height:100vh;display:grid;place-items:center;padding:24px;
+  background:radial-gradient(1200px 600px at 50% -10%, #EDE4FF 0%, var(--bg) 60%);}
+.gate-card{width:100%;max-width:420px;background:var(--white);border:1px solid var(--line);
+  border-radius:20px;padding:40px 32px;box-shadow:0 24px 60px -30px rgba(75,27,176,.35)}
+.brand{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--purple);margin-bottom:18px}
+.gate-card h1{font-size:24px;font-weight:800;margin:0 0 8px;letter-spacing:-.02em}
+.gate-card p{margin:0 0 26px;font-size:14px;color:var(--ink-2);line-height:1.6}
+label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:8px}
+input[type=text]{width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;
+  font-size:17px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;outline:none;
+  font-family:inherit;transition:border-color .15s, box-shadow .15s}
+input[type=text]:focus{border-color:var(--purple);box-shadow:0 0 0 4px var(--purple-soft)}
+.btn{width:100%;margin-top:16px;padding:14px;border:0;border-radius:12px;background:var(--purple);
+  color:#fff;font-size:15px;font-weight:700;transition:background .15s}
+.btn:hover{background:var(--purple-deep)}
+.btn[disabled]{opacity:.55;cursor:progress}
+.msg{margin-top:14px;font-size:13px;color:#D6335A;min-height:18px;line-height:1.5}
+
+/* ---------- 라이브러리 ---------- */
+header.top{background:var(--white);border-bottom:1px solid var(--line);padding:18px 28px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.who{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.who span{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-top:4px;letter-spacing:0}
+.ghost{background:none;border:1px solid var(--line);border-radius:10px;padding:9px 16px;
+  font-size:13px;font-weight:700;color:var(--ink-2)}
+.ghost:hover{border-color:var(--purple);color:var(--purple)}
+main{max-width:1180px;margin:0 auto;padding:32px 28px 80px}
+.course{margin-bottom:38px}
+.course h2{font-size:13px;font-weight:800;letter-spacing:.08em;color:var(--purple);
+  margin:0 0 14px;padding-bottom:10px;border-bottom:1.5px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(75,27,176,.4)}
+.thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#2A1A55,#7132F5);position:relative;
+  display:grid;place-items:center;border:0;width:100%;padding:0}
+.play{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center}
+.play::after{content:'';border-left:13px solid var(--purple);border-top:8px solid transparent;
+  border-bottom:8px solid transparent;margin-left:4px}
+.dur{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;
+  font-weight:700;padding:3px 7px;border-radius:6px}
+.card-body{padding:14px 15px 15px;display:flex;flex-direction:column;gap:12px;flex:1}
+.card-title{font-size:14.5px;font-weight:700;line-height:1.45;letter-spacing:-.01em}
+.actions{margin-top:auto;display:flex;gap:8px}
+.actions button,.actions a{flex:1;text-align:center;text-decoration:none;padding:9px;border-radius:9px;
+  font-size:12.5px;font-weight:700;border:1px solid var(--line);color:var(--ink-2);background:none}
+.actions a.dl{background:var(--purple-soft);border-color:transparent;color:var(--purple-deep)}
+.note{font-size:11.5px;color:var(--ink-2);opacity:.85}
+.empty{padding:60px 20px;text-align:center;color:var(--ink-2);font-size:14px}
+
+/* ---------- 플레이어 ---------- */
+#modal{position:fixed;inset:0;background:rgba(10,6,24,.82);display:grid;place-items:center;
+  padding:20px;z-index:50}
+.player{width:100%;max-width:960px}
+.player-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px;color:#fff}
+.player-head strong{font-size:16px;font-weight:700}
+.close{background:none;border:0;color:#fff;font-size:26px;line-height:1;padding:4px 8px}
+.frame{aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden}
+.frame iframe{width:100%;height:100%;border:0}
+
+@media (max-width:520px){ main{padding:24px 16px 60px} header.top{padding:16px} }
+@media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+
+<!-- ===== 접속코드 입력 ===== -->
+<section id="gate">
+  <div class="gate-card">
+    <div class="brand">K-BRAIN E-LEARNING</div>
+    <h1>과정영상 뷰어</h1>
+    <p>담당자에게 전달받은 접속코드를 입력하면<br>귀사에 공유된 과정영상이 열립니다.</p>
+    <label for="code">접속코드</label>
+    <input type="text" id="code" placeholder="예: ELEC2026" autocomplete="off" spellcheck="false">
+    <button class="btn" id="enterBtn">영상 열기</button>
+    <div class="msg" id="msg"></div>
+  </div>
+</section>
+
+<!-- ===== 라이브러리 ===== -->
+<div id="library" class="hidden">
+  <header class="top">
+    <div class="who" id="clientName">고객사명<span id="expiry"></span></div>
+    <button class="ghost" id="outBtn">나가기</button>
+  </header>
+  <main id="list"></main>
+</div>
+
+<!-- ===== 플레이어 ===== -->
+<div id="modal" class="hidden">
+  <div class="player">
+    <div class="player-head">
+      <strong id="playingTitle"></strong>
+      <button class="close" id="closeBtn" aria-label="닫기">&times;</button>
+    </div>
+    <div class="frame"><iframe id="vimeo" allow="autoplay; fullscreen" allowfullscreen></iframe></div>
+  </div>
+</div>
+
+<script>
+/* Apps Script 웹앱 배포 URL로 교체하세요 */
+const API = 'https://script.google.com/macros/s/XXXXXXXXXXXX/exec';
+
+const $ = function (s) { return document.querySelector(s); };
+let DATA = null;
+
+$('#enterBtn').addEventListener('click', enter);
+$('#code').addEventListener('keydown', function (e) { if (e.key === 'Enter') enter(); });
+$('#closeBtn').addEventListener('click', closePlayer);
+$('#modal').addEventListener('click', function (e) { if (e.target === this) closePlayer(); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePlayer(); });
+$('#outBtn').addEventListener('click', function () { location.reload(); });
+
+async function enter() {
+  const code = $('#code').value.trim();
+  const btn = $('#enterBtn');
+  $('#msg').textContent = '';
+  if (!code) { $('#msg').textContent = '접속코드를 입력해 주세요.'; return; }
+
+  btn.disabled = true; btn.textContent = '확인 중...';
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ code: code })
+    });
+    const data = await res.json();
+    if (!data.ok) { $('#msg').textContent = data.message; return; }
+    DATA = data;
+    render();
+  } catch (err) {
+    $('#msg').textContent = '연결에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.';
+  } finally {
+    btn.disabled = false; btn.textContent = '영상 열기';
+  }
+}
+
+function render() {
+  $('#gate').classList.add('hidden');
+  $('#library').classList.remove('hidden');
+  $('#clientName').firstChild.textContent = DATA.client;
+  $('#expiry').textContent = DATA.expiresAt ? '이용 기간 ' + DATA.expiresAt + '까지' : '';
+
+  const list = $('#list');
+  if (!DATA.items.length) {
+    list.innerHTML = '<div class="empty">아직 공유된 영상이 없습니다. 담당자에게 문의해 주세요.</div>';
+    return;
+  }
+
+  const byCourse = {};
+  DATA.items.forEach(function (v) {
+    (byCourse[v.course || '기타'] = byCourse[v.course || '기타'] || []).push(v);
+  });
+
+  list.innerHTML = Object.keys(byCourse).map(function (course) {
+    const cards = byCourse[course].map(function (v, i) {
+      const dl = v.canDownload
+        ? '<a class="dl" href="' + esc(v.downloadUrl) + '" download>다운로드</a>'
+        : '<span class="note" style="flex:1;align-self:center;text-align:center">재생 전용</span>';
+      return '' +
+        '<article class="card">' +
+          '<button class="thumb" data-id="' + esc(v.id) + '" aria-label="' + esc(v.title) + ' 재생">' +
+            '<span class="play"></span>' +
+            (v.duration ? '<span class="dur">' + esc(v.duration) + '</span>' : '') +
+          '</button>' +
+          '<div class="card-body">' +
+            '<div class="card-title">' + esc(v.title) + '</div>' +
+            '<div class="actions">' +
+              '<button data-id="' + esc(v.id) + '" class="playBtn">재생</button>' + dl +
+            '</div>' +
+          '</div>' +
+        '</article>';
+    }).join('');
+    return '<section class="course"><h2>' + esc(course) + '</h2><div class="grid">' + cards + '</div></section>';
+  }).join('');
+
+  list.querySelectorAll('.thumb, .playBtn').forEach(function (el) {
+    el.addEventListener('click', function () { openPlayer(el.dataset.id); });
+  });
+}
+
+function openPlayer(id) {
+  const v = DATA.items.find(function (x) { return x.id === id; });
+  if (!v) return;
+  let src = 'https://player.vimeo.com/video/' + v.vimeoId + '?autoplay=1&title=0&byline=0&portrait=0';
+  if (v.vimeoHash) src += '&h=' + v.vimeoHash;
+  $('#vimeo').src = src;
+  $('#playingTitle').textContent = v.title;
+  $('#modal').classList.remove('hidden');
+}
+
+function closePlayer() {
+  $('#vimeo').src = '';
+  $('#modal').classList.add('hidden');
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+  });
+}
+</script>
+</body>
+</html>
